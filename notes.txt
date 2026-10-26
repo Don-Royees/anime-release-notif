@@ -1,0 +1,49 @@
+1. The Configuration Files (Root Folder)
+.env: This holds your secret keys. You will only write one line in this file:DISCORD_WEBHOOK_URL=[https://discord.com/api/webhooks/your_long_token_here](https://discord.com/api/webhooks/your_long_token_here).
+
+requirements.txt (Note: You have a typo in your terminal (requirments.txt). You should rename it to requirements.txt so cloud servers recognize it automatically). This file simply lists your libraries, one per line: fastapi, uvicorn, requests, feedparser, and python-dotenv.
+
+.gitignore: This stops secrets from uploading to GitHub. It should contain lines for venv/, .env, __pycache__/, and *.pyc.
+
+README.md: Your instructions for how to run the project. You will write commands like "Run uvicorn src.main:app --reload to start the server."
+
+2. The Python Source Code (src/)
+Since you are using FastAPI, your code is split into specific jobs so the API server runs smoothly while a background task checks for anime.
+
+src/__init__.py
+
+Contents: Leave this file completely blank. Its mere existence tells Python that the src folder is an official module, allowing you to import files into one another.
+
+src/api_client.py
+
+Contents: The code to talk to AniList or Jikan.
+
+You will write a function (e.g., get_tracked_anime()) that makes a requests.get() call to the API, looks at your watchlist, and returns a Python list of the exact anime titles and upcoming episode numbers you are waiting for.
+
+src/rss_scraper.py
+
+Contents: The code to check for new releases.
+
+You will write a function (e.g., get_latest_torrents()) that uses feedparser.parse("[https://nyaa.si/?page=rss](https://nyaa.si/?page=rss)") to download the latest uploads and return them as a clean list of titles and links.
+
+src/matcher.py
+
+Contents: The brain of the application.
+
+You will write the Regular Expression (re) logic here. It takes the messy RSS titles (e.g., [SubsPlease] Jujutsu Kaisen - 05 (1080p).mkv) and strips out the brackets and resolution tags to see if it matches the clean name and episode number you got from api_client.py.
+
+src/discord_webhook.py
+
+Contents: The alert system.
+
+You will use os.getenv("DISCORD_WEBHOOK_URL") to load your secret URL. Then, you will write a function (e.g., send_alert(anime_title, link)) that formats a JSON message and sends a requests.post() to Discord so it pops up on your phone.
+
+src/main.py
+
+Contents: The FastAPI server and the orchestrator.
+
+You will create your FastAPI app (app = FastAPI()).
+
+You will define a background task (using fastapi.background or asyncio) that runs every 10 minutes. This background task will call api_client.py, pass that data to rss_scraper.py, run matcher.py, and if a match is found, trigger discord_webhook.py.
+
+You can also add a simple API endpoint like @app.get("/status") so you can open your browser and see if the tracker is currently running.

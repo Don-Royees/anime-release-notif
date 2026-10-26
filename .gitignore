@@ -1,0 +1,7 @@
+cat <<EOT >> .gitignore
+.env
+__pycache__/
+*.pyc
+EOT
+.venv
+notes
